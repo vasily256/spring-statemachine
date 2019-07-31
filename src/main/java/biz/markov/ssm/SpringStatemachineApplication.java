@@ -1,7 +1,7 @@
 package biz.markov.ssm;
 
-import biz.markov.ssm.enums.Events;
-import biz.markov.ssm.enums.States;
+import biz.markov.ssm.model.Events;
+import biz.markov.ssm.model.States;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -23,11 +23,12 @@ public class SpringStatemachineApplication implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         log.info("Starting state machine");
         stateMachine.start();
         stateMachine.sendEvent(Events.AB);
         stateMachine.sendEvent(Events.BC);
-        stateMachine.sendEvent(Events.CA);
+        stateMachine.sendEvent(Events.CD);
+        stateMachine.stop();
     }
 }

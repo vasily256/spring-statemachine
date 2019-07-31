@@ -1,20 +1,24 @@
 package biz.markov.ssm.config;
 
-import biz.markov.ssm.enums.Events;
-import biz.markov.ssm.enums.States;
+import biz.markov.ssm.model.Events;
+import biz.markov.ssm.model.States;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.statemachine.action.Action;
 import org.springframework.statemachine.config.EnableStateMachine;
 import org.springframework.statemachine.config.EnumStateMachineConfigurerAdapter;
 import org.springframework.statemachine.config.builders.StateMachineConfigurationConfigurer;
 import org.springframework.statemachine.config.builders.StateMachineStateConfigurer;
 import org.springframework.statemachine.config.builders.StateMachineTransitionConfigurer;
+import org.springframework.statemachine.guard.Guard;
 import org.springframework.statemachine.listener.StateMachineListener;
 import org.springframework.statemachine.listener.StateMachineListenerAdapter;
 import org.springframework.statemachine.state.State;
 
 import java.util.EnumSet;
+import java.util.Objects;
+import java.util.Random;
 
 @Configuration
 @EnableStateMachine
@@ -35,7 +39,8 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<States
         states
                 .withStates()
                 .initial(States.A)
-                .states(EnumSet.allOf(States.class));
+                .states(EnumSet.allOf(States.class))
+                .choice(States.D);
     }
 
     @Override
@@ -54,8 +59,13 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<States
                     .and()
                 .withExternal()
                     .source(States.C)
-                    .target(States.A)
-                    .event(Events.CA);
+                    .target(States.D)
+                    .event(Events.CD)
+                    .and()
+                .withChoice()
+                    .source(States.D)
+                    .first(States.TRUE, guard(), action())
+                    .last(States.FALSE, action());
     }
 
     @Bean
@@ -63,8 +73,27 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<States
         return new StateMachineListenerAdapter<States, Events>() {
             @Override
             public void stateChanged(State<States, Events> from, State<States, Events> to) {
-                log.info("State changed from {} to {}", from.getId(), to.getId());
+                log.info(
+                        "Listener: state changed from {} to {}",
+                        Objects.nonNull(from) ? from.getId() : "NONE",
+                        to.getId()
+                );
             }
         };
+    }
+
+    @Bean
+    public Guard<States, Events> guard() {
+        return ctx -> {
+            Random random = new Random(System.currentTimeMillis());
+            boolean result = random.nextBoolean();
+            log.info("Guard: {}", result);
+            return result;
+        };
+    }
+
+    @Bean
+    public Action<States, Events> action() {
+        return context -> log.info("Action: changing state");
     }
 }
