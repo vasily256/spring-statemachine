@@ -18,7 +18,6 @@ import org.springframework.statemachine.state.State;
 
 import java.util.EnumSet;
 import java.util.Objects;
-import java.util.Random;
 
 @Configuration
 @EnableStateMachine
@@ -40,7 +39,8 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<States
                 .withStates()
                 .initial(States.A)
                 .states(EnumSet.allOf(States.class))
-                .choice(States.D);
+                .choice(States.D)
+                .choice(States.D0);
     }
 
     @Override
@@ -64,8 +64,13 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<States
                     .and()
                 .withChoice()
                     .source(States.D)
-                    .first(States.TRUE, guard(), action())
-                    .last(States.FALSE, action());
+                    .first(States.D1, guard(), whenTrueAction())
+                    .last(States.D0, whenFalseAction())
+                    .and()
+                .withChoice()
+                    .source(States.D0)
+                    .first(States.E, guard(), whenTrueAction())
+                    .last(States.D0, whenFalseAction());
     }
 
     @Bean
@@ -85,15 +90,19 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<States
     @Bean
     public Guard<States, Events> guard() {
         return ctx -> {
-            Random random = new Random(System.currentTimeMillis());
-            boolean result = random.nextBoolean();
+            boolean result = Math.random() < 0.5;
             log.info("Guard: {}", result);
             return result;
         };
     }
 
     @Bean
-    public Action<States, Events> action() {
-        return context -> log.info("Action: changing state");
+    public Action<States, Events> whenTrueAction() {
+        return context -> log.info("Action: true");
+    }
+
+    @Bean
+    public Action<States, Events> whenFalseAction() {
+        return context -> log.info("Action: false");
     }
 }
