@@ -55,6 +55,7 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<States
                 .withExternal()
                     .source(States.B)
                     .target(States.C)
+                    .action(actionBc())
                     .event(Events.BC)
                     .and()
                 .withExternal()
@@ -94,6 +95,11 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<States
             log.info("Guard: {}", result);
             return result;
         };
+    }
+
+    @Bean
+    public Action<States, Events> actionBc() {
+        return context -> log.info("Action: B to C");
     }
 
     @Bean
