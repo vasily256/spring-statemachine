@@ -40,7 +40,8 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<States
                 .initial(States.A)
                 .states(EnumSet.allOf(States.class))
                 .choice(States.D)
-                .choice(States.D0);
+                .choice(States.D0)
+                .choice(States.X);
     }
 
     @Override
@@ -61,6 +62,7 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<States
                 .withExternal()
                     .source(States.C)
                     .target(States.D)
+                    .action(actionCd())
                     .event(Events.CD)
                     .and()
                 .withChoice()
@@ -71,7 +73,19 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<States
                 .withChoice()
                     .source(States.D0)
                     .first(States.E, guard(), whenTrueAction())
-                    .last(States.D0, whenFalseAction());
+                    .last(States.D0, whenFalseAction())
+                    .and()
+
+                .withExternal()
+                    .source(States.A)
+                    .target(States.X)
+                    .action(actionAx())
+                    .event(Events.AX)
+                    .and()
+                .withChoice()
+                    .source(States.X)
+                    .first(States.Y, guard())
+                    .last(States.Z);
     }
 
     @Bean
@@ -100,6 +114,16 @@ public class StateMachineConfig extends EnumStateMachineConfigurerAdapter<States
     @Bean
     public Action<States, Events> actionBc() {
         return context -> log.info("Action: B to C");
+    }
+
+    @Bean
+    public Action<States, Events> actionCd() {
+        return context -> log.info("Action: C to D");
+    }
+
+    @Bean
+    public Action<States, Events> actionAx() {
+        return context -> log.info("Action: A to X");
     }
 
     @Bean

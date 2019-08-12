@@ -30,5 +30,9 @@ public class SpringStatemachineApplication implements CommandLineRunner {
         stateMachine.sendEvent(Events.BC);
         stateMachine.sendEvent(Events.CD);
         stateMachine.stop();
+
+        stateMachine.start();
+        stateMachine.sendEvent(Events.AX);
+        stateMachine.stop();
     }
 }
